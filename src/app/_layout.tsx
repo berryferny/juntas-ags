@@ -1,18 +1,38 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
+import { useEffect } from 'react';
+import { Stack } from 'expo-router';
+import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
-import { useColorScheme } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
-import AppTabs from '@/components/app-tabs';
-
+// Mantenemos la pantalla de carga visible mientras se cargan las fuentes.
 SplashScreen.preventAutoHideAsync();
 
-export default function TabLayout() {
-  const colorScheme = useColorScheme();
+export default function RootLayout() {
+  const [loaded, error] = useFonts({
+    // El nombre a la izquierda ('PlayfairDisplay') es el que usarás en tus estilos.
+    // La ruta a la derecha debe coincidir con la ubicación de tu archivo .ttf
+    'PlayfairDisplay': require('../assets/fonts/PlayfairDisplay[wght].ttf'),
+    'Montserrat': require('../assets/fonts/Montserrat[wght].ttf'),
+  });
+
+  useEffect(() => {
+    if (loaded || error) {
+      // Una vez cargadas (o si hay un error), ocultamos la pantalla de carga.
+      SplashScreen.hideAsync();
+    }
+  }, [loaded, error]);
+
+  // Si aún no se han cargado las fuentes (y no hay error), no mostramos nada.
+  if (!loaded && !error) {
+    return null;
+  }
+
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <AnimatedSplashOverlay />
-      <AppTabs />
-    </ThemeProvider>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(tabs)" />
+      </Stack>
+      <StatusBar style="light" />
+    </>
   );
 }
